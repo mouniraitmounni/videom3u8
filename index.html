@@ -26,43 +26,65 @@
 
     <video id="video" controls></video>
 
+    <!-- Firebase SDKs -->
+    <script src="https://www.gstatic.com/firebasejs/9.0.0/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.0.0/firebase-database.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
+
     <script>
-        // استخدام خدمة Proxy لتجاوز قيود CORS
-        var proxyUrl = "https://cors-anywhere.herokuapp.com/";
+        // إعداد Firebase
+        const firebaseConfig = {
+            apiKey: "YOUR_API_KEY",
+            authDomain: "YOUR_AUTH_DOMAIN",
+            databaseURL: "YOUR_DATABASE_URL",
+            projectId: "YOUR_PROJECT_ID",
+            storageBucket: "YOUR_STORAGE_BUCKET",
+            messagingSenderId: "YOUR_MESSAGING_SENDER_ID",
+            appId: "YOUR_APP_ID"
+        };
 
-        // استخراج رابط البث الممرر عبر URL
-        var urlParams = new URLSearchParams(window.location.search);
-        var videoSrc = urlParams.get('stream_url');
-        
-        // إذا لم يكن هناك رابط ممرر، استخدم رابط تجريبي
-        if (!videoSrc) {
-            videoSrc = "http://myrbunq.smart-tv.xyz:80/live/3133480476/6975838018/10941.m3u8";
-        } else {
-            // إضافة الـ Proxy للرابط لتجاوز قيود CORS
-            videoSrc = proxyUrl + videoSrc;
-        }
+        // تهيئة تطبيق Firebase
+        const app = firebase.initializeApp(firebaseConfig);
+        const database = firebase.database();
 
-        var video = document.getElementById('video');
-
-        // تحقق من دعم HLS وتشغيل البث
-        if (Hls.isSupported()) {
-            var hls = new Hls();
-            hls.loadSource(videoSrc);  // تحميل رابط البث مع الـ Proxy
-            hls.attachMedia(video);
-            hls.on(Hls.Events.MANIFEST_PARSED, function() {
-                video.play();  // تشغيل الفيديو بعد التحميل
-            });
-            hls.on(Hls.Events.ERROR, function(event, data) {
-                console.error("خطأ في تشغيل البث المباشر:", data);  // تسجيل الأخطاء
-            });
-        } else if (video.canPlayType('application/vnd.apple.mpegurl')) {
-            // دعم مدمج لـ HLS (iOS)
-            video.src = videoSrc;
-            video.addEventListener('loadedmetadata', function() {
-                video.play();
+        // الدالة لجلب رابط البث من Firebase
+        function getStreamUrl() {
+            return database.ref('/matches/match1/stream_url').once('value').then((snapshot) => {
+                return snapshot.val();  // إرجاع رابط البث المباشر من Firebase
             });
         }
+
+        // تحميل الفيديو بعد جلب رابط البث من Firebase
+        getStreamUrl().then((streamUrl) => {
+            if (streamUrl) {
+                var proxyUrl = "https://cors-anywhere.herokuapp.com/";  // خادم البروكسي الذي يدعم HTTPS
+                var videoSrc = proxyUrl + streamUrl;
+
+                var video = document.getElementById('video');
+
+                if (Hls.isSupported()) {
+                    var hls = new Hls();
+                    hls.loadSource(videoSrc);
+                    hls.attachMedia(video);
+                    hls.on(Hls.Events.MANIFEST_PARSED, function() {
+                        video.play();
+                    });
+                    hls.on(Hls.Events.ERROR, function(event, data) {
+                        console.error("خطأ في تشغيل البث المباشر:", data);
+                    });
+                } else if (video.canPlayType('application/vnd.apple.mpegurl')) {
+                    video.src = videoSrc;
+                    video.addEventListener('loadedmetadata', function() {
+                        video.play();
+                    });
+                }
+            } else {
+                console.error("لم يتم العثور على رابط البث في قاعدة البيانات");
+            }
+        }).catch((error) => {
+            console.error("خطأ في جلب البيانات من Firebase:", error);
+        });
+
     </script>
 
 </body>

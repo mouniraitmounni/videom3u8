@@ -9,9 +9,6 @@
     <link href="https://vjs.zencdn.net/7.11.4/video-js.css" rel="stylesheet" />
     <script src="https://vjs.zencdn.net/7.11.4/video.min.js"></script>
 
-    <!-- تضمين مكتبة Video.js HTTP Streaming (VHS) التي تدعم HLS -->
-    <script src="https://vjs.zencdn.net/7.11.4/video-js.min.js"></script>
-
     <style>
         body, html {
             margin: 0;
@@ -39,7 +36,7 @@
         var streamUrl = urlParams.get('m3u8');
 
         if (streamUrl) {
-            // التأكد من أن الرابط يستخدم HTTPS لتجنب مشاكل CORS
+            // منع Mixed Content: تحويل HTTP إلى HTTPS إذا كان ممكنًا
             if (streamUrl.startsWith('http://')) {
                 streamUrl = streamUrl.replace('http://', 'https://');
             }

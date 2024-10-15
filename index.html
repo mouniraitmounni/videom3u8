@@ -1,7 +1,8 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>مشغل البث المباشر</title>
     <style>
         body, html {
@@ -10,38 +11,91 @@
             background-color: black;
             height: 100%;
             width: 100%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
         }
         #videoPlayer {
             width: 100%;
+            max-width: 100%;
             height: 100%;
             background-color: black;
+        }
+        #errorMessage {
+            color: white;
+            text-align: center;
+            font-size: 18px;
+            display: none;
         }
     </style>
 </head>
 <body>
+    <div id="errorMessage">هذا الجهاز لا يدعم تشغيل البث المباشر أو حدث خطأ أثناء محاولة تشغيل الفيديو.</div>
     <video id="videoPlayer" controls autoplay></video>
 
     <!-- تضمين hls.js لدعم بروتوكول HLS -->
     <script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
     <script>
+        // دالة لتشغيل البث باستخدام hls.js أو المشغل المدمج في الأجهزة
         function playStream(streamUrl) {
             var video = document.getElementById('videoPlayer');
+            var errorMessage = document.getElementById('errorMessage');
 
             if (Hls.isSupported()) {
+                // إذا كانت hls.js مدعومة، نقوم باستخدامها
                 var hls = new Hls();
                 hls.loadSource(streamUrl);
                 hls.attachMedia(video);
                 hls.on(Hls.Events.MANIFEST_PARSED, function() {
                     video.play();
                 });
+                hls.on(Hls.Events.ERROR, function(event, data) {
+                    // إدارة الأخطاء المتعلقة بالبث
+                    if (data.fatal) {
+                        switch (data.type) {
+                            case Hls.ErrorTypes.NETWORK_ERROR:
+                                errorMessage.innerHTML = 'حدث خطأ في الشبكة أثناء محاولة تحميل البث.';
+                                errorMessage.style.display = 'block';
+                                break;
+                            case Hls.ErrorTypes.MEDIA_ERROR:
+                                errorMessage.innerHTML = 'حدث خطأ في الوسائط. يرجى التحقق من تنسيق الفيديو.';
+                                errorMessage.style.display = 'block';
+                                hls.recoverMediaError();
+                                break;
+                            default:
+                                errorMessage.innerHTML = 'حدث خطأ غير متوقع.';
+                                errorMessage.style.display = 'block';
+                                hls.destroy();
+                                break;
+                        }
+                    }
+                });
             } else if (video.canPlayType('application/vnd.apple.mpegurl')) {
+                // دعم أصلي في أجهزة iOS (Safari)
                 video.src = streamUrl;
                 video.addEventListener('loadedmetadata', function() {
                     video.play();
                 });
+                video.addEventListener('error', function() {
+                    errorMessage.innerHTML = 'حدث خطأ أثناء تحميل الفيديو.';
+                    errorMessage.style.display = 'block';
+                });
             } else {
-                alert('هذا الجهاز لا يدعم تشغيل البث المباشر.');
+                // في حال عدم دعم HLS
+                errorMessage.innerHTML = 'هذا الجهاز لا يدعم تشغيل البث المباشر.';
+                errorMessage.style.display = 'block';
             }
+        }
+
+        // الحصول على الرابط من معلمة URL
+        var urlParams = new URLSearchParams(window.location.search);
+        var streamUrl = urlParams.get('m3u8');
+
+        if (streamUrl) {
+            playStream(streamUrl);
+        } else {
+            document.getElementById('errorMessage').innerHTML = 'لم يتم توفير رابط البث.';
+            document.getElementById('errorMessage').style.display = 'block';
         }
     </script>
 </body>

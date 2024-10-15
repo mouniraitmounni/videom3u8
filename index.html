@@ -26,9 +26,9 @@
 
     <video id="video" controls></video>
 
-    <!-- Firebase SDKs -->
-    <script src="https://www.gstatic.com/firebasejs/9.0.0/firebase-app.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.0.0/firebase-database.js"></script>
+    <!-- Firebase SDKs عبر CDN -->
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-database.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
 
     <script>
@@ -43,16 +43,7 @@
             appId: "YOUR_APP_ID"
         };
 
-        // تهيئة تطبيق Firebase
-        const app = firebase.initializeApp(firebaseConfig);
-        const database = firebase.database();
-
-        // الدالة لجلب رابط البث من Firebase
-        function getStreamUrl() {
-            return database.ref('/matches/match1/stream_url').once('value').then((snapshot) => {
-                return snapshot.val();  // إرجاع رابط البث المباشر من Firebase
-            });
-        }
+        
 
         // تحميل الفيديو بعد جلب رابط البث من Firebase
         getStreamUrl().then((streamUrl) => {

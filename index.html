@@ -3,54 +3,91 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Responsive Video Player</title>
+    <title>Ultimate Live Video Player</title>
 
     <!-- CSS الخاص بـ Video.js -->
     <link href="https://vjs.zencdn.net/7.15.4/video-js.css" rel="stylesheet" />
 
-    <!-- تنسيق CSS لجعل المشغل متجاوبًا مع الهاتف -->
     <style>
+        /* تصميم مخصص */
+        body {
+            background-color: #282c34;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            color: #fff;
+        }
+
         .video-js {
             width: 100%;
-            height: auto;
-            max-width: 100%; /* تأكد من أن الفيديو لا يتجاوز عرض الشاشة */
+            max-width: 900px;
+            border-radius: 10px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+        }
+
+        .live-indicator {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background-color: red;
+            padding: 10px;
+            border-radius: 5px;
+            font-weight: bold;
+            color: #fff;
+        }
+
+        /* تخصيص شريط التحكم */
+        .vjs-control-bar {
+            background-color: rgba(0, 0, 0, 0.7);
         }
     </style>
 </head>
 <body>
 
-    <!-- عنصر الفيديو -->
-    <video id="my-video" class="video-js vjs-default-skin" controls preload="auto" width="640" height="264" data-setup="{}">
-        <source src="path/to/your/video.m3u8" type="application/x-mpegURL">
+    <div class="live-indicator">LIVE</div>
+    <video id="my-video" class="video-js vjs-default-skin vjs-big-play-centered" controls preload="auto" data-setup="{}">
+        <source src="path/to/your/live/stream.m3u8" type="application/x-mpegURL">
         <p class="vjs-no-js">
-            To view this video please enable JavaScript, and consider upgrading to a
-            web browser that supports HTML5 video.
+            To view this video please enable JavaScript, and consider upgrading to a web browser that supports HTML5 video.
         </p>
     </video>
 
-    <!-- Video.js مكتبة -->
+    <!-- مكتبة Video.js -->
     <script src="https://vjs.zencdn.net/7.15.4/video.js"></script>
 
-    <!-- مكتبة hls.js لدعم m3u8 -->
-    <script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
+    <!-- مكتبة اختيار الجودة -->
+    <script src="https://cdn.jsdelivr.net/npm/videojs-contrib-quality-levels@2/videojs-contrib-quality-levels.min.js"></script>
+
+    <!-- مكتبة اختيار المصدر (الجودة) -->
+    <script src="https://cdn.jsdelivr.net/npm/videojs-http-source-selector@latest/dist/videojs-http-source-selector.min.js"></script>
 
     <script>
-        var videoElement = document.getElementById('my-video');
-        var videoSrc = 'http://myrbunq.smart-tv.xyz:80/live/3133480476/6975838018/62.m3u8'; // ضع هنا رابط الفيديو m3u8
+        var player = videojs('my-video');
 
-        if (Hls.isSupported()) {
-            var hls = new Hls();
-            hls.loadSource(videoSrc);
-            hls.attachMedia(videoElement);
-            hls.on(Hls.Events.MANIFEST_PARSED, function() {
-                videoElement.play();
-            });
-        } else if (videoElement.canPlayType('application/vnd.apple.mpegurl')) {
-            videoElement.src = videoSrc;
-            videoElement.addEventListener('loadedmetadata', function() {
-                videoElement.play();
-            });
-        }
+        // تمكين اختيار الجودة
+        player.ready(function() {
+            player.qualityLevels();
+            player.httpSourceSelector();
+        });
+
+        // تأكد من صحة الرابط
+        var liveStreamSrc = 'http://myrbunq.smart-tv.xyz:80/live/3133480476/6975838018/76.m3u8'; // تأكد من وضع رابط صحيح للبث المباشر
+        player.src({
+            src: liveStreamSrc,
+            type: 'application/x-mpegURL'
+        });
+
+        // حدث عند بدء التشغيل
+        player.on('play', function() {
+            console.log('تم بدء تشغيل البث المباشر');
+        });
+
+        // في حالة وجود خطأ
+        player.on('error', function() {
+            console.log('حدث خطأ أثناء محاولة تشغيل البث المباشر.');
+        });
     </script>
 
 </body>

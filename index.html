@@ -40,8 +40,8 @@
             var video = document.getElementById('videoPlayer');
             var errorMessage = document.getElementById('errorMessage');
             
-            // استخدام وكيل لتحويل الرابط إلى HTTPS
-            var proxyUrl = 'https://thingproxy.freeboard.io/fetch/' + streamUrl;
+            // استخدام وكيل AllOrigins لتحويل الرابط إلى HTTPS
+            var proxyUrl = 'https://api.allorigins.win/raw?url=' + encodeURIComponent(streamUrl);
             
             if (Hls.isSupported()) {
                 var hls = new Hls();

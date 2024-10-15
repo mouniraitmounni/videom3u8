@@ -1,108 +1,108 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="ar">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Live Video Player</title>
-    <script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script> <!-- رابط HLS.js من CDN -->
-    <script src="hls.js"></script>
+    <title>مشغل بث مباشر m3u8</title>
     <style>
-        body, html {
+        body {
             margin: 0;
             padding: 0;
-            height: 100%;
-            width: 100%;
             display: flex;
             justify-content: center;
             align-items: center;
+            height: 100vh;
             background-color: #000;
+            position: relative;
         }
-
         video {
             width: 100%;
             height: 100%;
             object-fit: cover;
         }
-
-        .message {
+        .custom-controls {
             position: absolute;
-            top: 10px;
+            bottom: 20px;
             left: 50%;
             transform: translateX(-50%);
+            display: flex;
+            gap: 10px;
+            z-index: 10;
+        }
+        button {
+            padding: 10px;
+            font-size: 16px;
+            color: #fff;
+            background-color: rgba(0, 0, 0, 0.5);
+            border: none;
+            cursor: pointer;
+        }
+        button:hover {
             background-color: rgba(0, 0, 0, 0.7);
-            color: white;
-            padding: 10px 20px;
-            border-radius: 5px;
-            display: none;
         }
     </style>
 </head>
 <body>
 
-<video id="video" controls autoplay muted></video> <!-- تشغيل تلقائي وكتم الصوت -->
-<div id="message" class="message">Loading...</div> <!-- إظهار رسالة تحميل -->
+    <video id="video" controls></video>
 
-<script>
-    var video = document.getElementById('video');
-    var message = document.getElementById('message');
-    var videoSrc = new URLSearchParams(window.location.search).get('m3u8'); // جلب رابط m3u8 من URL
+    <div class="custom-controls">
+        <button onclick="playVideo()">تشغيل</button>
+        <button onclick="pauseVideo()">إيقاف</button>
+        <button onclick="fullscreenVideo()">ملء الشاشة</button>
+    </div>
 
-    if (Hls.isSupported()) {
-        var hls = new Hls();
+    <script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
+    <script src="https://cdn.jsdelivr.net/npm/clappr@latest/dist/clappr.min.js"></script>
+    <script>
+        var video = document.getElementById('video');
+        var videoSrc = 'http://myrbunq.smart-tv.xyz:80/live/3133480476/6975838018/58.m3u8';  // ضع هنا رابط البث المباشر m3u8
 
-        // التعامل مع أخطاء التحميل
-        hls.on(Hls.Events.ERROR, function(event, data) {
-            if (data.fatal) {
-                switch (data.type) {
-                    case Hls.ErrorTypes.NETWORK_ERROR:
-                        message.innerHTML = 'Network error: Retrying...';
-                        hls.startLoad(); // إعادة التحميل في حال وجود خطأ في الشبكة
-                        break;
-                    case Hls.ErrorTypes.MEDIA_ERROR:
-                        message.innerHTML = 'Media error: Recovering...';
-                        hls.recoverMediaError(); // محاولة إصلاح الأخطاء المتعلقة بالوسائط
-                        break;
-                    default:
-                        message.innerHTML = 'An unrecoverable error occurred';
-                        hls.destroy(); // تدمير HLS في حال وجود خطأ لا يمكن إصلاحه
-                        break;
-                }
+        // التحقق من دعم HLS
+        if (Hls.isSupported()) {
+            var hls = new Hls({
+                maxBufferLength: 30, // تخصيص الذاكرة المؤقتة للحصول على أفضل أداء
+                liveSyncDuration: 3  // تحسين مزامنة البث المباشر
+            });
+            hls.loadSource(videoSrc);
+            hls.attachMedia(video);
+            hls.on(Hls.Events.MANIFEST_PARSED, function() {
+                video.play();
+            });
+            hls.on(Hls.Events.ERROR, function(event, data) {
+                console.error("خطأ في تشغيل البث المباشر:", data);
+            });
+        } else if (video.canPlayType('application/vnd.apple.mpegurl')) {
+            // بالنسبة للأجهزة التي تدعم HLS بشكل أصلي (مثل iOS)
+            video.src = videoSrc;
+            video.addEventListener('loadedmetadata', function() {
+                video.play();
+            });
+        } else {
+            alert("متصفحك لا يدعم بث HLS");
+        }
+
+        // وظائف الأزرار
+        function playVideo() {
+            video.play();
+        }
+
+        function pauseVideo() {
+            video.pause();
+        }
+
+        function fullscreenVideo() {
+            if (video.requestFullscreen) {
+                video.requestFullscreen();
+            } else if (video.mozRequestFullScreen) { /* Firefox */
+                video.mozRequestFullScreen();
+            } else if (video.webkitRequestFullscreen) { /* Chrome, Safari and Opera */
+                video.webkitRequestFullscreen();
+            } else if (video.msRequestFullscreen) { /* IE/Edge */
+                video.msRequestFullscreen();
             }
-        });
-
-        hls.loadSource(videoSrc);
-        hls.attachMedia(video);
-    } else if (video.canPlayType('application/vnd.apple.mpegurl')) {
-        // للأجهزة التي تدعم HLS مباشرة (مثل Safari)
-        video.src = videoSrc;
-    }
-
-    video.play(); // تشغيل الفيديو تلقائيًا
-
-    // إظهار رسالة أثناء تحميل الفيديو
-    video.addEventListener('waiting', function() {
-        message.innerHTML = 'Loading...';
-        message.style.display = 'block';
-    });
-
-    // إخفاء الرسالة عند بدء تشغيل الفيديو
-    video.addEventListener('playing', function() {
-        message.style.display = 'none';
-    });
-
-    // إظهار رسالة عند انتهاء الفيديو
-    video.addEventListener('ended', function() {
-        message.innerHTML = 'The live stream has ended';
-        message.style.display = 'block';
-    });
-
-    // إظهار رسالة خطأ إذا فشل الفيديو في التحميل
-    video.addEventListener('error', function() {
-        message.innerHTML = 'Failed to load the video';
-        message.style.display = 'block';
-    });
-
-</script>
+        }
+    </script>
 
 </body>
 </html>

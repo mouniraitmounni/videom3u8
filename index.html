@@ -30,19 +30,17 @@
     </style>
 </head>
 <body>
-    <div id="errorMessage">هذا الجهاز لا يدعم تشغيل البث المباشر أو حدث خطأ أثناء محاولة تشغيل الفيديو.</div>
+    <div id="errorMessage">حدث خطأ أثناء محاولة تشغيل الفيديو.</div>
     <video id="videoPlayer" controls autoplay></video>
 
     <!-- تضمين hls.js لدعم بروتوكول HLS -->
     <script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
     <script>
-        // دالة لتشغيل البث باستخدام hls.js أو المشغل المدمج في الأجهزة
         function playStream(streamUrl) {
             var video = document.getElementById('videoPlayer');
             var errorMessage = document.getElementById('errorMessage');
 
             if (Hls.isSupported()) {
-                // إذا كانت hls.js مدعومة، نقوم باستخدامها
                 var hls = new Hls();
                 hls.loadSource(streamUrl);
                 hls.attachMedia(video);
@@ -50,41 +48,39 @@
                     video.play();
                 });
                 hls.on(Hls.Events.ERROR, function(event, data) {
-                    // إدارة الأخطاء المتعلقة بالبث
                     if (data.fatal) {
                         switch (data.type) {
                             case Hls.ErrorTypes.NETWORK_ERROR:
-                                errorMessage.innerHTML = 'حدث خطأ في الشبكة أثناء محاولة تحميل البث.';
-                                errorMessage.style.display = 'block';
+                                showErrorMessage('خطأ في الشبكة: تعذر تحميل البث.');
                                 break;
                             case Hls.ErrorTypes.MEDIA_ERROR:
-                                errorMessage.innerHTML = 'حدث خطأ في الوسائط. يرجى التحقق من تنسيق الفيديو.';
-                                errorMessage.style.display = 'block';
+                                showErrorMessage('خطأ في الوسائط: يرجى التأكد من تنسيق الفيديو.');
                                 hls.recoverMediaError();
                                 break;
                             default:
-                                errorMessage.innerHTML = 'حدث خطأ غير متوقع.';
-                                errorMessage.style.display = 'block';
+                                showErrorMessage('حدث خطأ غير متوقع. يرجى المحاولة لاحقًا.');
                                 hls.destroy();
                                 break;
                         }
                     }
                 });
             } else if (video.canPlayType('application/vnd.apple.mpegurl')) {
-                // دعم أصلي في أجهزة iOS (Safari)
                 video.src = streamUrl;
                 video.addEventListener('loadedmetadata', function() {
                     video.play();
                 });
                 video.addEventListener('error', function() {
-                    errorMessage.innerHTML = 'حدث خطأ أثناء تحميل الفيديو.';
-                    errorMessage.style.display = 'block';
+                    showErrorMessage('خطأ أثناء تحميل الفيديو.');
                 });
             } else {
-                // في حال عدم دعم HLS
-                errorMessage.innerHTML = 'هذا الجهاز لا يدعم تشغيل البث المباشر.';
-                errorMessage.style.display = 'block';
+                showErrorMessage('هذا الجهاز لا يدعم تشغيل البث المباشر.');
             }
+        }
+
+        function showErrorMessage(message) {
+            var errorMessage = document.getElementById('errorMessage');
+            errorMessage.innerHTML = message;
+            errorMessage.style.display = 'block';
         }
 
         // الحصول على الرابط من معلمة URL
@@ -94,8 +90,7 @@
         if (streamUrl) {
             playStream(streamUrl);
         } else {
-            document.getElementById('errorMessage').innerHTML = 'لم يتم توفير رابط البث.';
-            document.getElementById('errorMessage').style.display = 'block';
+            showErrorMessage('لم يتم توفير رابط البث.');
         }
     </script>
 </body>

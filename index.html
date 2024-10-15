@@ -20,50 +20,22 @@
             height: 100%;
             object-fit: cover;
         }
-        .custom-controls {
-            position: absolute;
-            bottom: 20px;
-            left: 50%;
-            transform: translateX(-50%);
-            display: flex;
-            gap: 10px;
-            z-index: 10;
-        }
-        button {
-            padding: 10px;
-            font-size: 16px;
-            color: #fff;
-            background-color: rgba(0, 0, 0, 0.5);
-            border: none;
-            cursor: pointer;
-        }
-        button:hover {
-            background-color: rgba(0, 0, 0, 0.7);
-        }
     </style>
 </head>
 <body>
 
     <video id="video" controls></video>
 
-    <div class="custom-controls">
-        <button onclick="playVideo()">تشغيل</button>
-        <button onclick="pauseVideo()">إيقاف</button>
-        <button onclick="fullscreenVideo()">ملء الشاشة</button>
-    </div>
-
     <script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
-    <script src="https://cdn.jsdelivr.net/npm/clappr@latest/dist/clappr.min.js"></script>
     <script>
-        var video = document.getElementById('video');
-        var videoSrc = 'http://myrbunq.smart-tv.xyz:80/live/3133480476/6975838018/58.m3u8';  // ضع هنا رابط البث المباشر m3u8
+        // هنا سيتم استقبال رابط البث من كود Kodular
+        var urlParams = new URLSearchParams(window.location.search);
+        var videoSrc = urlParams.get('stream_url');  // سيتم تمرير الرابط إلى هنا
 
-        // التحقق من دعم HLS
+        var video = document.getElementById('video');
+
         if (Hls.isSupported()) {
-            var hls = new Hls({
-                maxBufferLength: 30, // تخصيص الذاكرة المؤقتة للحصول على أفضل أداء
-                liveSyncDuration: 3  // تحسين مزامنة البث المباشر
-            });
+            var hls = new Hls();
             hls.loadSource(videoSrc);
             hls.attachMedia(video);
             hls.on(Hls.Events.MANIFEST_PARSED, function() {
@@ -73,34 +45,10 @@
                 console.error("خطأ في تشغيل البث المباشر:", data);
             });
         } else if (video.canPlayType('application/vnd.apple.mpegurl')) {
-            // بالنسبة للأجهزة التي تدعم HLS بشكل أصلي (مثل iOS)
             video.src = videoSrc;
             video.addEventListener('loadedmetadata', function() {
                 video.play();
             });
-        } else {
-            alert("متصفحك لا يدعم بث HLS");
-        }
-
-        // وظائف الأزرار
-        function playVideo() {
-            video.play();
-        }
-
-        function pauseVideo() {
-            video.pause();
-        }
-
-        function fullscreenVideo() {
-            if (video.requestFullscreen) {
-                video.requestFullscreen();
-            } else if (video.mozRequestFullScreen) { /* Firefox */
-                video.mozRequestFullScreen();
-            } else if (video.webkitRequestFullscreen) { /* Chrome, Safari and Opera */
-                video.webkitRequestFullscreen();
-            } else if (video.msRequestFullscreen) { /* IE/Edge */
-                video.msRequestFullscreen();
-            }
         }
     </script>
 

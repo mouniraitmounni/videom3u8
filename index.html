@@ -30,9 +30,10 @@
     </style>
 </head>
 <body>
-    <div id="errorMessage">حدث خطأ أثناء محاولة تشغيل الفيديو.</div>
+    <div id="errorMessage">حدث خطأ أثناء محاولة تشغيل البث.</div>
     <video id="videoPlayer" controls autoplay></video>
 
+    <!-- تضمين hls.js لدعم بروتوكول HLS -->
     <script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
     <script>
         function playStream(streamUrl) {
@@ -40,7 +41,7 @@
             var errorMessage = document.getElementById('errorMessage');
             
             // استخدام وكيل لتحويل الرابط إلى HTTPS
-            var proxyUrl = 'https://cors-anywhere.herokuapp.com/' + streamUrl;
+            var proxyUrl = 'https://thingproxy.freeboard.io/fetch/' + streamUrl;
             
             if (Hls.isSupported()) {
                 var hls = new Hls();
@@ -50,9 +51,7 @@
                     video.play();
                 });
                 hls.on(Hls.Events.ERROR, function(event, data) {
-                    if (data.fatal) {
-                        showErrorMessage('حدث خطأ أثناء تحميل البث.');
-                    }
+                    showErrorMessage('حدث خطأ أثناء تحميل البث.');
                 });
             } else if (video.canPlayType('application/vnd.apple.mpegurl')) {
                 video.src = proxyUrl;
@@ -73,8 +72,10 @@
             errorMessage.style.display = 'block';
         }
 
+        // الحصول على الرابط من معلمة URL
         var urlParams = new URLSearchParams(window.location.search);
         var streamUrl = urlParams.get('m3u8');
+
         if (streamUrl) {
             playStream(streamUrl);
         } else {

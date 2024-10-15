@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ultimate Live Video Player</title>
+
+    <link href="https://vjs.zencdn.net/7.15.4/video-js.css" rel="stylesheet" />
+    <style>
+        body {
+            background-color: #1c1e22; /* لون خلفية أغمق */
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            color: #fff;
+        }
+        .video-js {
+            width: 100%;
+            height: 100%;
+            max-height: 100vh;
+            border-radius: 10px; /* زوايا مستديرة */
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.7);
+        }
+    </style>
+</head>
+<body>
+
+    <video id="my-video" class="video-js vjs-default-skin vjs-big-play-centered" controls preload="auto">
+        <source id="videoSource" type="application/x-mpegURL">
+        <p class="vjs-no-js">
+            To view this video please enable JavaScript, and consider upgrading to a web browser that supports HTML5 video.
+        </p>
+    </video>
+
+    <script src="https://vjs.zencdn.net/7.15.4/video.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
+    <script>
+        const player = videojs('my-video');
+        const urlParams = new URLSearchParams(window.location.search);
+        const liveStreamSrc = urlParams.get('m3u8'); // تأكد من استخدام 'm3u8'
+
+        if (liveStreamSrc) {
+            if (Hls.isSupported()) {
+                const hls = new Hls();
+                hls.loadSource(liveStreamSrc);
+                hls.attachMedia(player.tech().el());
+                hls.on(Hls.Events.MANIFEST_PARSED, function() {
+                    player.play();
+                });
+            } else if (player.canPlayType('application/vnd.apple.mpegurl')) {
+                player.src({ src: liveStreamSrc, type: 'application/x-mpegURL' });
+                player.play();
+            } else {
+                console.error('HLS not supported on this browser.');
+            }
+        } else {
+            console.error('No URL provided for the stream.');
+        }
+
+        player.on('play', function() {
+            console.log('تم بدء تشغيل البث المباشر');
+        });
+
+        player.on('error', function() {
+            console.log('حدث خطأ أثناء محاولة تشغيل البث المباشر.');
+        });
+    </script>
+
+</body>
+</html>

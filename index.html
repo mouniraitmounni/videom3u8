@@ -11,20 +11,24 @@
     <style>
         /* تصميم مخصص */
         body {
-            background-color: #282c34;
+            background-color: #1c1e22; /* لون خلفية أغمق */
             display: flex;
             justify-content: center;
             align-items: center;
             height: 100vh;
             margin: 0;
             color: #fff;
+            position: relative; /* أضف هذا للتمكين من وضع عناصر فوق الجسم */
+            overflow: hidden; /* منع التمرير */
         }
 
         .video-js {
-            width: 100%;
-            max-width: 900px;
-            border-radius: 10px;
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+            width: 100%; /* ملء الشاشة بشكل كامل */
+            height: 100%; /* ملء الشاشة بشكل كامل */
+            max-height: 100vh; /* عدم تجاوز ارتفاع الشاشة */
+            border-radius: 10px; /* زوايا مستديرة */
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.7);
+            overflow: hidden; /* منع العناصر من الخروج عن الحدود */
         }
 
         .live-indicator {
@@ -36,11 +40,87 @@
             border-radius: 5px;
             font-weight: bold;
             color: #fff;
+            font-size: 1.2em; /* زيادة حجم الخط لجعله بارزًا */
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.5);
         }
 
         /* تخصيص شريط التحكم */
         .vjs-control-bar {
-            background-color: rgba(0, 0, 0, 0.7);
+            background-color: rgba(0, 0, 0, 0.9); /* لون داكن للشريط */
+            border-radius: 0 0 10px 10px; /* زوايا مستديرة في الأسفل */
+            box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.5);
+            height: 60px; /* تحديد ارتفاع الشريط */
+            display: flex; /* لجعل العناصر داخل الشريط متراصة */
+            align-items: center; /* محاذاة العناصر عموديًا في المنتصف */
+            padding: 0 10px; /* إضافة مسافة داخلية */
+        }
+
+        /* تخصيص الأزرار */
+        .vjs-play-control,
+        .vjs-volume-panel,
+        .vjs-fullscreen-control {
+            border-radius: 5px; /* زوايا مستديرة للأزرار */
+            background-color: rgba(255, 255, 255, 0.2); /* خلفية شفافه */
+            color: #fff; /* لون النص */
+            transition: background-color 0.3s, transform 0.2s; /* تأثير الانتقال */
+            padding: 10px; /* إضافة مسافة داخلية للأزرار */
+            margin: 0 5px; /* مسافة بين الأزرار */
+            display: flex;
+            align-items: center;
+            justify-content: center; /* مركز الأزرار */
+            width: 45px; /* عرض ثابت للأزرار */
+            height: 45px; /* ارتفاع ثابت للأزرار */
+        }
+
+        .vjs-play-control:hover,
+        .vjs-volume-panel:hover,
+        .vjs-fullscreen-control:hover {
+            background-color: rgba(255, 255, 255, 0.4); /* تفاعل عند التحويم */
+            transform: scale(1.1); /* تأثير تكبير عند التحويم */
+        }
+
+        .vjs-play-control:focus,
+        .vjs-volume-panel:focus,
+        .vjs-fullscreen-control:focus {
+            outline: none; /* إزالة الخط المحيط عند التركيز */
+        }
+
+        /* تحسين شريط التقدم */
+        .vjs-progress-control {
+            flex-grow: 1; /* لملء المساحة المتاحة */
+            margin: 0 10px; /* مسافة بين عناصر التحكم */
+            height: 6px; /* تحديد ارتفاع شريط التقدم */
+        }
+
+        .vjs-slider {
+            background: rgba(255, 255, 255, 0.3); /* خلفية شريط التقدم */
+            border-radius: 3px; /* زوايا مستديرة */
+        }
+
+        .vjs-play-progress {
+            background: #f00; /* لون التقدم */
+            border-radius: 3px; /* زوايا مستديرة */
+        }
+
+        /* تخصيص زر الصوت */
+        .vjs-volume-panel {
+            width: 50px; /* عرض ثابت لزر الصوت */
+        }
+
+        /* تخصيص تصميم للمحمول */
+        @media (max-width: 600px) {
+            .live-indicator {
+                font-size: 1em; /* تصغير حجم الخط في الأجهزة المحمولة */
+                padding: 8px; /* تقليل مساحة الحواف */
+            }
+
+            .vjs-play-control,
+            .vjs-volume-panel,
+            .vjs-fullscreen-control {
+                width: 35px; /* عرض أصغر للأزرار */
+                height: 35px; /* ارتفاع أصغر للأزرار */
+                padding: 8px; /* تقليل مساحة الحواف */
+            }
         }
     </style>
 </head>
@@ -73,7 +153,7 @@
         });
 
         // تأكد من صحة الرابط
-        var liveStreamSrc = 'http://myrbunq.smart-tv.xyz:80/live/3133480476/6975838018/76.m3u8'; // تأكد من وضع رابط صحيح للبث المباشر
+        var liveStreamSrc = 'http://myrbunq.smart-tv.xyz:80/live/3133480476/6975838018/10933.m3u8'; // تأكد من وضع رابط صحيح للبث المباشر
         player.src({
             src: liveStreamSrc,
             type: 'application/x-mpegURL'

@@ -4,83 +4,52 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>مشغل البث المباشر</title>
+
+    <!-- تضمين مكتبة Video.js -->
+    <link href="https://vjs.zencdn.net/7.11.4/video-js.css" rel="stylesheet" />
+    <script src="https://vjs.zencdn.net/7.11.4/video.min.js"></script>
+
+    <!-- تضمين مكتبة HLS لـ Video.js لدعم بروتوكول HLS -->
+    <script src="https://cdn.jsdelivr.net/npm/videojs-contrib-hls@5.15.0/dist/videojs-contrib-hls.min.js"></script>
+
     <style>
         body, html {
             margin: 0;
             padding: 0;
-            background-color: black;
             height: 100%;
-            width: 100%;
             display: flex;
             justify-content: center;
             align-items: center;
-        }
-        #videoPlayer {
-            width: 100%;
-            max-width: 100%;
-            height: 100%;
             background-color: black;
         }
-        #errorMessage {
-            color: white;
-            text-align: center;
-            font-size: 18px;
-            display: none;
+        .video-js {
+            width: 80%;
+            height: 80%;
         }
     </style>
 </head>
 <body>
-    <div id="errorMessage">حدث خطأ أثناء محاولة تشغيل البث.</div>
-    <video id="videoPlayer" controls autoplay></video>
 
-    <!-- تضمين hls.js لدعم بروتوكول HLS -->
-    <script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
+    <!-- مشغل الفيديو -->
+    <video id="liveVideo" class="video-js vjs-default-skin" controls autoplay></video>
+
     <script>
-        function playStream(streamUrl) {
-            var video = document.getElementById('videoPlayer');
-            var errorMessage = document.getElementById('errorMessage');
-            
-            // استخدام وكيل AllOrigins لتحويل الرابط إلى HTTPS
-            var proxyUrl = 'https://api.allorigins.win/raw?url=' + encodeURIComponent(streamUrl);
-            
-            if (Hls.isSupported()) {
-                var hls = new Hls();
-                hls.loadSource(proxyUrl);
-                hls.attachMedia(video);
-                hls.on(Hls.Events.MANIFEST_PARSED, function() {
-                    video.play();
-                });
-                hls.on(Hls.Events.ERROR, function(event, data) {
-                    showErrorMessage('حدث خطأ أثناء تحميل البث.');
-                });
-            } else if (video.canPlayType('application/vnd.apple.mpegurl')) {
-                video.src = proxyUrl;
-                video.addEventListener('loadedmetadata', function() {
-                    video.play();
-                });
-                video.addEventListener('error', function() {
-                    showErrorMessage('خطأ أثناء تحميل الفيديو.');
-                });
-            } else {
-                showErrorMessage('هذا الجهاز لا يدعم تشغيل البث المباشر.');
-            }
-        }
-
-        function showErrorMessage(message) {
-            var errorMessage = document.getElementById('errorMessage');
-            errorMessage.innerHTML = message;
-            errorMessage.style.display = 'block';
-        }
-
         // الحصول على الرابط من معلمة URL
         var urlParams = new URLSearchParams(window.location.search);
         var streamUrl = urlParams.get('m3u8');
 
         if (streamUrl) {
-            playStream(streamUrl);
+            // إعداد مشغل Video.js
+            var player = videojs('liveVideo');
+            player.src({
+                src: streamUrl,
+                type: 'application/x-mpegURL'
+            });
+            player.play();
         } else {
-            showErrorMessage('لم يتم توفير رابط البث.');
+            alert('لم يتم توفير رابط البث.');
         }
     </script>
+
 </body>
 </html>

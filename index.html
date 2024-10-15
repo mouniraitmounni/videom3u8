@@ -3,55 +3,53 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>مشغل البث المباشر</title>
+    <title>Responsive Video Player</title>
 
-    <!-- تضمين مكتبة Video.js -->
-    <link href="https://vjs.zencdn.net/7.11.4/video-js.css" rel="stylesheet" />
-    <script src="https://vjs.zencdn.net/7.11.4/video.min.js"></script>
+    <!-- CSS الخاص بـ Video.js -->
+    <link href="https://vjs.zencdn.net/7.15.4/video-js.css" rel="stylesheet" />
 
+    <!-- تنسيق CSS لجعل المشغل متجاوبًا مع الهاتف -->
     <style>
-        body, html {
-            margin: 0;
-            padding: 0;
-            height: 100%;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            background-color: black;
-        }
         .video-js {
-            width: 80%;
-            height: 80%;
+            width: 100%;
+            height: auto;
+            max-width: 100%; /* تأكد من أن الفيديو لا يتجاوز عرض الشاشة */
         }
     </style>
 </head>
 <body>
 
-    <!-- مشغل الفيديو -->
-    <video id="liveVideo" class="video-js vjs-default-skin" controls autoplay></video>
+    <!-- عنصر الفيديو -->
+    <video id="my-video" class="video-js vjs-default-skin" controls preload="auto" width="640" height="264" data-setup="{}">
+        <source src="path/to/your/video.m3u8" type="application/x-mpegURL">
+        <p class="vjs-no-js">
+            To view this video please enable JavaScript, and consider upgrading to a
+            web browser that supports HTML5 video.
+        </p>
+    </video>
+
+    <!-- Video.js مكتبة -->
+    <script src="https://vjs.zencdn.net/7.15.4/video.js"></script>
+
+    <!-- مكتبة hls.js لدعم m3u8 -->
+    <script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
 
     <script>
-        // الحصول على الرابط من معلمة URL
-        var urlParams = new URLSearchParams(window.location.search);
-        var streamUrl = urlParams.get('m3u8');
+        var videoElement = document.getElementById('my-video');
+        var videoSrc = 'http://myrbunq.smart-tv.xyz:80/live/3133480476/6975838018/62.m3u8'; // ضع هنا رابط الفيديو m3u8
 
-        if (streamUrl) {
-            // منع Mixed Content: تحويل HTTP إلى HTTPS إذا كان ممكنًا
-            if (streamUrl.startsWith('http://')) {
-                streamUrl = streamUrl.replace('http://', 'https://');
-            }
-
-            // إعداد مشغل Video.js
-            var player = videojs('liveVideo');
-            player.src({
-                src: streamUrl,
-                type: 'application/x-mpegURL'
+        if (Hls.isSupported()) {
+            var hls = new Hls();
+            hls.loadSource(videoSrc);
+            hls.attachMedia(videoElement);
+            hls.on(Hls.Events.MANIFEST_PARSED, function() {
+                videoElement.play();
             });
-            player.play().catch(error => {
-                console.log("Auto-play prevented: " + error);
+        } else if (videoElement.canPlayType('application/vnd.apple.mpegurl')) {
+            videoElement.src = videoSrc;
+            videoElement.addEventListener('loadedmetadata', function() {
+                videoElement.play();
             });
-        } else {
-            alert('لم يتم توفير رابط البث.');
         }
     </script>
 

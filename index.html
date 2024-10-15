@@ -33,39 +33,29 @@
     <div id="errorMessage">حدث خطأ أثناء محاولة تشغيل الفيديو.</div>
     <video id="videoPlayer" controls autoplay></video>
 
-    <!-- تضمين hls.js لدعم بروتوكول HLS -->
     <script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
     <script>
         function playStream(streamUrl) {
             var video = document.getElementById('videoPlayer');
             var errorMessage = document.getElementById('errorMessage');
-
+            
+            // استخدام وكيل لتحويل الرابط إلى HTTPS
+            var proxyUrl = 'https://cors-anywhere.herokuapp.com/' + streamUrl;
+            
             if (Hls.isSupported()) {
                 var hls = new Hls();
-                hls.loadSource(streamUrl);
+                hls.loadSource(proxyUrl);
                 hls.attachMedia(video);
                 hls.on(Hls.Events.MANIFEST_PARSED, function() {
                     video.play();
                 });
                 hls.on(Hls.Events.ERROR, function(event, data) {
                     if (data.fatal) {
-                        switch (data.type) {
-                            case Hls.ErrorTypes.NETWORK_ERROR:
-                                showErrorMessage('خطأ في الشبكة: تعذر تحميل البث.');
-                                break;
-                            case Hls.ErrorTypes.MEDIA_ERROR:
-                                showErrorMessage('خطأ في الوسائط: يرجى التأكد من تنسيق الفيديو.');
-                                hls.recoverMediaError();
-                                break;
-                            default:
-                                showErrorMessage('حدث خطأ غير متوقع. يرجى المحاولة لاحقًا.');
-                                hls.destroy();
-                                break;
-                        }
+                        showErrorMessage('حدث خطأ أثناء تحميل البث.');
                     }
                 });
             } else if (video.canPlayType('application/vnd.apple.mpegurl')) {
-                video.src = streamUrl;
+                video.src = proxyUrl;
                 video.addEventListener('loadedmetadata', function() {
                     video.play();
                 });
@@ -83,10 +73,8 @@
             errorMessage.style.display = 'block';
         }
 
-        // الحصول على الرابط من معلمة URL
         var urlParams = new URLSearchParams(window.location.search);
         var streamUrl = urlParams.get('m3u8');
-
         if (streamUrl) {
             playStream(streamUrl);
         } else {
